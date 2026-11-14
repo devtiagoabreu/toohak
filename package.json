@@ -1,0 +1,37 @@
+{
+  "name": "toohak",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:studio": "drizzle-kit studio"
+  },
+  "dependencies": {
+    "next": "14.2.5",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "@neondatabase/serverless": "^0.9.5",
+    "drizzle-orm": "^0.33.0",
+    "ably": "^1.2.48",
+    "zod": "^3.23.8",
+    "next-auth": "^4.24.7",
+    "nodemailer": "^6.9.14",
+    "bcryptjs": "^2.4.3",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/nodemailer": "^6.4.16"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "drizzle-kit": "^0.24.0",
+    "typescript": "^5.5.3",
+    "eslint": "^8.57.0",
+    "eslint-config-next": "14.2.5"
+  }
+}
