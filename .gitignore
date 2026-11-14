@@ -19,3 +19,6 @@ yarn-error.log*
 
 .vercel
 *.tsbuildinfo
+
+# Aplicação de exemplo (referência apenas - não commitar)
+docs/app-exemple/
