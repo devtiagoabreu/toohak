@@ -1,5 +1,6 @@
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import EmailProvider from "next-auth/providers/email";
 import { eq } from "drizzle-orm";
 import { getDb } from "@/lib/db";
 import { users, verificationTokens } from "@/db/schema";
@@ -48,7 +49,6 @@ const providers: NextAuthOptions["providers"] = [
 
 // Adiciona EmailProvider apenas se as variáveis de SMTP estiverem configuradas
 if (process.env.SYSTEM_EMAIL_USER && process.env.SYSTEM_EMAIL_PASSWORD) {
-  const EmailProvider = (await import("next-auth/providers/email")).default;
   providers.push(
     EmailProvider({
       server: createSystemTransporter(),
