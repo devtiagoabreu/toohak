@@ -11,13 +11,24 @@ export interface SmtpConfig {
 }
 
 export function createSystemTransporter(): nodemailer.Transporter {
+  const user = process.env.SYSTEM_EMAIL_USER;
+  const pass = process.env.SYSTEM_EMAIL_PASSWORD;
+
+  if (!user || !pass) {
+    // Transporte mock: não envia nada, apenas loga. Evita quebrar o build/start sem SMTP.
+    return nodemailer.createTransport({
+      streamTransport: true,
+      newline: "unix",
+    }) as nodemailer.Transporter;
+  }
+
   return nodemailer.createTransport({
     host: "smtp.gmail.com",
     port: 587,
     secure: false,
     auth: {
-      user: process.env.SYSTEM_EMAIL_USER!,
-      pass: process.env.SYSTEM_EMAIL_PASSWORD!,
+      user,
+      pass,
     },
   });
 }
@@ -36,7 +47,7 @@ export async function sendEmail(
   }
 ): Promise<void> {
   await transporter.sendMail({
-    from: `"Toohak" <${process.env.SYSTEM_EMAIL_USER!}>`,
+    from: `"Toohak" <${process.env.SYSTEM_EMAIL_USER || "noreply@toohak.local"}>`,
     to: options.to,
     subject: options.subject,
     html: options.html,

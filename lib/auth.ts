@@ -1,57 +1,63 @@
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import EmailProvider from "next-auth/providers/email";
 import { eq } from "drizzle-orm";
 import { getDb } from "@/lib/db";
-import { users, accounts, sessions, verificationTokens } from "@/db/schema";
-import { createSystemTransporter, sendEmail } from "@/lib/email";
-import { compare, hash } from "bcryptjs";
+import { users, verificationTokens } from "@/db/schema";
+import { createSystemTransporter } from "@/lib/email";
+import { compare } from "bcryptjs";
 
-export const authOptions: NextAuthOptions = {
-  providers: [
-    CredentialsProvider({
-      name: "credentials",
-      credentials: {
-        email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" },
-      },
-      async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          throw new Error("Email e senha são obrigatórios");
-        }
+const providers: NextAuthOptions["providers"] = [
+  CredentialsProvider({
+    name: "credentials",
+    credentials: {
+      email: { label: "Email", type: "email" },
+      password: { label: "Password", type: "password" },
+    },
+    async authorize(credentials) {
+      if (!credentials?.email || !credentials?.password) {
+        throw new Error("Email e senha são obrigatórios");
+      }
 
-        const user = await getDb().query.users.findFirst({
-          where: eq(users.email, credentials.email),
-        });
+      const db = getDb();
+      const user = await db.query.users.findFirst({
+        where: eq(users.email, credentials.email),
+      });
 
-        if (!user || !user.passwordHash) {
-          throw new Error("Email ou senha inválidos");
-        }
+      if (!user || !user.passwordHash) {
+        throw new Error("Email ou senha inválidos");
+      }
 
-        if (!user.emailVerified) {
-          throw new Error("Email não verificado. Verifique sua caixa de entrada.");
-        }
+      if (!user.emailVerified) {
+        throw new Error("Email não verificado. Verifique sua caixa de entrada.");
+      }
 
-        const isValid = await compare(credentials.password, user.passwordHash);
-        if (!isValid) {
-          throw new Error("Email ou senha inválidos");
-        }
+      const isValid = await compare(credentials.password, user.passwordHash);
+      if (!isValid) {
+        throw new Error("Email ou senha inválidos");
+      }
 
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          image: user.image,
-        };
-      },
-    }),
+      return {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        image: user.image,
+      };
+    },
+  }),
+];
+
+// Adiciona EmailProvider apenas se as variáveis de SMTP estiverem configuradas
+if (process.env.SYSTEM_EMAIL_USER && process.env.SYSTEM_EMAIL_PASSWORD) {
+  const EmailProvider = (await import("next-auth/providers/email")).default;
+  providers.push(
     EmailProvider({
       server: createSystemTransporter(),
-      from: `"Toohak" <${process.env.SYSTEM_EMAIL_USER!}>`,
+      from: `"Toohak" <${process.env.SYSTEM_EMAIL_USER}>`,
       async sendVerificationRequest(params) {
         const { identifier: email, token, url } = params;
 
-        await getDb().insert(verificationTokens).values({
+        const db = getDb();
+        await db.insert(verificationTokens).values({
           identifier: email,
           token,
           expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
@@ -68,8 +74,12 @@ export const authOptions: NextAuthOptions = {
           `,
         });
       },
-    }),
-  ],
+    })
+  );
+}
+
+export const authOptions: NextAuthOptions = {
+  providers,
   secret: process.env.NEXTAUTH_SECRET,
   session: {
     strategy: "jwt",
@@ -98,3 +108,13 @@ export const authOptions: NextAuthOptions = {
     error: "/auth/error",
   },
 };
+
+async function sendEmail(transporter: any, options: any) {
+  await transporter.sendMail({
+    from: `"Toohak" <${process.env.SYSTEM_EMAIL_USER || "noreply@toohak.local"}>`,
+    to: options.to,
+    subject: options.subject,
+    html: options.html,
+    text: options.text,
+  });
+}
