@@ -5,6 +5,8 @@ import { getDb } from "@/lib/db";
 import { recoveryCodes, users } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(): Promise<NextResponse> {
   try {
     const session = await getServerSession(authOptions);

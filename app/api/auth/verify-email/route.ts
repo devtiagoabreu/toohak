@@ -3,6 +3,8 @@ import { getDb } from "@/lib/db";
 import { verificationTokens, users } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(req: NextRequest): Promise<NextResponse> {
   try {
     const { searchParams } = new URL(req.url);

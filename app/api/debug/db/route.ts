@@ -4,6 +4,8 @@ import { authOptions } from "@/lib/auth";
 import { getDb } from "@/lib/db";
 import { quizzes } from "@/db/schema";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   const info: any = {
     env: {
@@ -29,9 +31,8 @@ export async function GET() {
     const rows = await db.select().from(quizzes).limit(1);
     info.db = { connected: true, quizCount: rows.length };
 
-    // Lista colunas da tabela quizzes
-    const columns = await db.execute`SELECT column_name FROM information_schema.columns WHERE table_name = 'quizzes' ORDER BY ordinal_position`;
-    info.db.columns = (columns as any[]).map((c: any) => c.column_name);
+    // Nao usa db.execute (incompatível com essa versao do driver Neon)
+    info.db.columnsNote = "use Neon SQL Editor para verificar colunas";
   } catch (err: any) {
     info.error = err.message;
     info.stack = err.stack;

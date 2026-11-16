@@ -6,6 +6,8 @@ import { eq, and } from "drizzle-orm";
 import { createSystemTransporter, sendEmail } from "@/lib/email";
 import { generateRecoveryCodes } from "@/lib/utils";
 
+export const dynamic = "force-dynamic";
+
 export async function POST(req: NextRequest): Promise<NextResponse> {
   try {
     const { name, email, password } = await req.json();
