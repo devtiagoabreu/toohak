@@ -12,7 +12,8 @@
 - **Editor (`app/(app)/create/page.tsx`)**: mídia só por URL (imagem/vídeo/arquivo) via modal + prévia; sugestões de busca contextuais pela pergunta (Google Imagens/Pinterest/Google) para escolher/colar link; salvar/carregar no banco com fallback local; edição `?id=`; duplicar; `Suspense`.
 - **Biblioteca (`app/(app)/library/page.tsx`)**: lista quizzes da API (mescla exemplos), abre `/create?id=` para editar.
 - **Auth/infra**: `middleware.ts` protege `/dashboard,/create,/library,/courses,/reports,/present` (redirect login + `callbackUrl`); `lib/realtime.ts` lazy init Ably; tipos mídia em `lib/data.ts`; nota migrations em `.env.example`. `npm run build` OK.
-- **Fix rotas auth**: páginas de verificação/recuperação movidas para `app/auth/verify-email` e `app/auth/recovery-codes` (antes em grupo `(auth)`, gerando `/verify-email` e 404 em `/auth/verify-email` usado no pós-registro).
+- **Fix rotas auth**: páginas movidas para `app/auth/verify-email` e `app/auth/recovery-codes` (corrige 404 pós-registro).
+- **Fix login Vercel**: removido `EmailProvider` de `lib/auth.ts` (exigia adapter → `EMAIL_REQUIRES_ADAPTER_ERROR` em `/auth/error?error=Configuration`); login segue por `Credentials` + verificação própria (`/api/auth/register`, tokens).
 
 ## Dificuldades → soluções
 - PowerShell sem heredoc `<<` → here-string `@'..'@` + `Out-File -LiteralPath/Set-Content`.
