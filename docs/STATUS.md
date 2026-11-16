@@ -1,38 +1,34 @@
-﻿# STATUS — Toohak
+﻿# STATUS - Toohak
 
 > Documento vivo e compacto. **Ler sempre no início de cada sessão** para retomar contexto.
 
 ## Resumo
-- Stack: Next.js 14 (App Router), NextAuth, Drizzle ORM + Neon/Postgres, Ably (chave), UI em `app/(app)`.
-- Estado: persistência inicial de quizzes + mídia por link/URL (sem upload). Sala ao vivo demo ainda usa BroadcastChannel (`lib/liveRoom.ts`).
+- Stack: Next.js 14 (App Router), NextAuth (JWT/Credentials), Drizzle ORM + Neon/Postgres, Ably (chave), UI em `app/(app)`.
+- Estado: quizzes com mídia por **link/URL** (sem upload), shell autenticado com perfil real, página de Configurações criada, testes unitários/integração (Vitest+RTL) para perfil. Sala ao vivo demo ainda usa BroadcastChannel (`lib/liveRoom.ts`).
 
 ## Feito (última entrega)
-- **DB (`db/schema.ts`)**: `quizzes` +`coverImageUrl,status,updatedAt`; `questions` +`type,mediaUrl,mediaType,note`; `options` +`orderIndex`, `isCorrect` default.
-- **APIs**: `GET/POST /api/quizzes`, `GET/PUT/DELETE /api/quizzes/[id]` (CRUD por usuário autenticado); `GET /api/media/suggest?q=` (links Google/Imagens/Pinterest).
-- **Editor (`app/(app)/create/page.tsx`)**: mídia só por URL (imagem/vídeo/arquivo) via modal + prévia; sugestões de busca contextuais pela pergunta (Google Imagens/Pinterest/Google) para escolher/colar link; salvar/carregar no banco com fallback local; edição `?id=`; duplicar; `Suspense`.
-- **Biblioteca (`app/(app)/library/page.tsx`)**: lista quizzes da API (mescla exemplos), abre `/create?id=` para editar.
-- **Auth/infra**: `middleware.ts` protege `/dashboard,/create,/library,/courses,/reports,/present` (redirect login + `callbackUrl`); `lib/realtime.ts` lazy init Ably; tipos mídia em `lib/data.ts`; nota migrations em `.env.example`. `npm run build` OK.
-- **Fix rotas auth**: páginas movidas para `app/auth/verify-email` e `app/auth/recovery-codes` (corrige 404 pós-registro).
-- **Fix login Vercel**: removido `EmailProvider` de `lib/auth.ts` (exigia adapter → `EMAIL_REQUIRES_ADAPTER_ERROR` em `/auth/error?error=Configuration`); login segue por `Credentials` + verificação própria (`/api/auth/register`, tokens).
+- **Perfil/sessão (UI)**: `components/AuthSessionProvider.tsx` (`SessionProvider` c/ `refetchOnWindowFocus`) no `app/layout.tsx`; `components/AppShell.tsx` usa `useSession` + `lib/userDisplay.ts` (`getDisplayName/getInitials`) para exibir nome/iniciais/email reais (sidebar/topo) e menu de sair — remove "Ana Martins/AM/Plano gratuito" hardcoded.
+- **Páginas/fluxo de usuário**: `app/(app)/settings/page.tsx` criada (perfil, conta/logout e crédito "Sobre o Toohak"); `app/dashboard/page.tsx` agora redireciona para `/library` via `getServerSession`; login (`app/auth/login/page.tsx`) pós-sucesso vai para `/library`; `middleware.ts` protege `/settings`.
+- **Crédito**: Criador do Toohak — Tiago de Abreu (@devtiagoabreu), marido da Marina e pai da Rosa, Ágatha e Cecília (exibido em Configurações).
+- **Testes**: infra Vitest+RTL (`vitest.config.ts`, `test/setup.ts`, scripts `test`/`test:watch`, deps dev) e testes passando: `__tests__/userDisplay.test.ts`, `__tests__/AppShell.test.tsx`, `__tests__/SettingsPage.test.tsx` (perfil real renderizado). Comando: `npm test`.
+- **(entregas anteriores)**: schema/migrations de quizzes+questões+opções com mídia por URL; APIs `GET/POST/PUT/DELETE /api/quizzes` e `/api/media/suggest`; editor `/create` (URL+preview+sugestões, salvar/carregar, `?id=`) e biblioteca `/library`; fixes rotas auth (`/auth/verify-email`, `/auth/recovery-codes`), remoção `EmailProvider` (Credentials), `lib/realtime.ts` lazy Ably.
 
 ## Dificuldades → soluções
-- PowerShell sem heredoc `<<` → here-string `@'..'@` + `Out-File -LiteralPath/Set-Content`.
-- Path `[id]` tratado como wildcard → `-LiteralPath`.
-- `useSearchParams` exigiu Suspense em `/create` → split `CreateQuizInner` + wrapper `<Suspense>`.
-- Ably top-level quebrava build sem env → `getAbly()` lazy.
-- Patch em arquivo grande/encoding ruidoso → reescrita limpa de create/library.
-- 404 em `/auth/verify-email` (pós-registro) → páginas estavam em `app/(auth)/...` (URL sem `/auth`); movidas para `app/auth/...` para casar com redirects/links.
-- Warnings de rotas auth dinâmicas no prerender (build concluiu).
+- `getSession` (client) em Server Component (`app/dashboard`) causava comportamento incorreto → troca para `getServerSession` + redirect.
+- Nome pode não atualizar se o JWT da sessão for antigo → `refetchOnWindowFocus` no provider; **usuário deve sair e entrar novamente** (e redeploy no Vercel) para renovar token com `name/email`.
+- Instalação npm quebrou com peer deps (next-auth/nodemailer) e crash do node/npm no ambiente → `npm install -D ... --legacy-peer-deps`; ajuste de teste para iniciais e JSX no Vitest (plugin React).
 
 ## Estado funcional
 - Persistência real requer: `DATABASE_URL` + migrations (`npm run db:generate && npm run db:migrate`) + login. Sem isso, fallback local/exemplos.
 - Mídia = **URL externa** (sem upload/blob).
+- Deploy: `https://toohak-jet.vercel.app` — requer redeploy com commits recentes e novo login para refletir perfil/correções.
 
 ## Próximos passos
-1. Aplicar migrations no Neon e validar fluxo logado (criar→salvar→listar→reabrir).
-2. Estender schema/APIs p/ histórias/cursos e metadados (visibilidade, capa, idioma).
-3. Trocar BroadcastChannel por Ably/WebSocket (sessão, presença, respostas, placar).
-4. Workspaces/autorização, importadores/LLM, testes críticos, limpar warnings dinâmicos.
+1. Aplicar migrations no Neon e validar fluxo logado (criar→salvar→listar→reabrir) + confirmar perfil da Agatha em produção.
+2. Ampliar testes (acessibilidade axe, segurança/APIs, fluxos críticos) e pipeline de verificação.
+3. Estender schema/APIs p/ histórias/cursos e metadados (visibilidade, capa, idioma).
+4. Trocar BroadcastChannel por Ably/WebSocket (sessão, presença, respostas, placar).
+5. Workspaces/autorização, importadores/LLM, limpar warnings dinâmicos do build.
 
 ## Comandos
-`npm run dev` | `npm run build` | `npm run db:generate` | `npm run db:migrate` | `npm run db:studio`
+`npm run dev` | `npm run build` | `npm test` | `npm run db:generate` | `npm run db:migrate` | `npm run db:studio`

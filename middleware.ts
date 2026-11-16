@@ -7,7 +7,14 @@ export default withAuth(
     const isAuth = !!token;
     const path = req.nextUrl.pathname;
     const isAuthPage = path.startsWith("/auth");
-    const isProtectedApp = path.startsWith("/dashboard") || path.startsWith("/create") || path.startsWith("/library") || path.startsWith("/courses") || path.startsWith("/reports") || path.startsWith("/present");
+    const isProtectedApp =
+      path.startsWith("/dashboard") ||
+      path.startsWith("/create") ||
+      path.startsWith("/library") ||
+      path.startsWith("/courses") ||
+      path.startsWith("/reports") ||
+      path.startsWith("/present") ||
+      path.startsWith("/settings");
 
     if (isAuthPage && isAuth) {
       return NextResponse.redirect(new URL("/library", req.url));
@@ -29,5 +36,5 @@ export default withAuth(
 );
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/auth/:path*", "/create/:path*", "/library/:path*", "/courses/:path*", "/reports/:path*", "/present/:path*"],
+  matcher: ["/dashboard/:path*", "/auth/:path*", "/create/:path*", "/library/:path*", "/courses/:path*", "/reports/:path*", "/present/:path*", "/settings/:path*"],
 };

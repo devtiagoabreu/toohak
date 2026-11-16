@@ -23,14 +23,14 @@ export default function LoginPage() {
       const result = await signIn("credentials", {
         email,
         password,
-        callbackUrl: "/dashboard",
+        callbackUrl: "/library",
         redirect: false,
       });
 
       if (result?.error) {
         setError(result.error);
       } else {
-        router.push("/dashboard");
+        router.push("/library");
         router.refresh();
       }
     } catch (err: any) {

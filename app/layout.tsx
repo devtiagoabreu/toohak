@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { AuthSessionProvider } from "@/components/AuthSessionProvider";
 import "./globals.css";
 import "./design-system.css";
 
@@ -19,9 +20,11 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body className={inter.className}>
-        <ThemeProvider defaultTheme="vibrant" switchable>
-          {children}
-        </ThemeProvider>
+        <AuthSessionProvider>
+          <ThemeProvider defaultTheme="vibrant" switchable>
+            {children}
+          </ThemeProvider>
+        </AuthSessionProvider>
       </body>
     </html>
   );
