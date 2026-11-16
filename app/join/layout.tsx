@@ -1,5 +1,4 @@
 ﻿import type { Metadata } from "next";
-import { siteConfig } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Entrar em uma sessão ao vivo",
@@ -13,3 +12,11 @@ export const metadata: Metadata = {
     url: "/join",
   },
 };
+
+export default function JoinLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return children;
+}
