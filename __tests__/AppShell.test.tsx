@@ -12,7 +12,8 @@ vi.mock("next-auth/react", () => ({
   signOut: vi.fn(),
 }));
 vi.mock("next/navigation", () => ({
-  usePathname: () => "/",
+  usePathname: () => "/library",
+  useRouter: () => ({ push: vi.fn() }),
 }));
 
 describe("AppShell", () => {
