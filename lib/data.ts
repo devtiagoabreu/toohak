@@ -20,6 +20,8 @@ export interface QuizQuestion {
   timeLimit: number;
   points: number;
   note?: string;
+  mediaUrl?: string;
+  mediaType?: "image" | "video" | "file";
 }
 
 export interface ContentItem {

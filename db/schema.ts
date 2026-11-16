@@ -80,24 +80,31 @@ export const quizzes = pgTable("quizzes", {
   userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   title: varchar("title", { length: 200 }).notNull(),
   description: text("description"),
+  coverImageUrl: varchar("cover_image_url", { length: 1000 }),
+  status: varchar("status", { length: 20 }).default("draft").notNull(),
   isPublic: boolean("is_public").default(true).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
 export const questions = pgTable("questions", {
   id: uuid("id").primaryKey().defaultRandom(),
   quizId: uuid("quiz_id").notNull().references(() => quizzes.id, { onDelete: "cascade" }),
+  type: varchar("type", { length: 30 }).default("multiple-choice").notNull(),
   questionText: text("question_text").notNull(),
   timeLimit: integer("time_limit").default(30).notNull(),
   pointsMultiplier: integer("points_multiplier").default(1000).notNull(),
   orderIndex: integer("order_index").notNull(),
-  imageUrl: varchar("image_url", { length: 500 }),
+  mediaUrl: varchar("media_url", { length: 1000 }),
+  mediaType: varchar("media_type", { length: 20 }),
+  note: text("note"),
 });
 
 export const options = pgTable("options", {
   id: uuid("id").primaryKey().defaultRandom(),
   questionId: uuid("question_id").notNull().references(() => questions.id, { onDelete: "cascade" }),
   optionText: text("option_text").notNull(),
-  isCorrect: boolean("is_correct").notNull(),
+  isCorrect: boolean("is_correct").default(false).notNull(),
   colorCode: varchar("color_code", { length: 20 }),
+  orderIndex: integer("order_index").default(0).notNull(),
 });

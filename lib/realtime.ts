@@ -1,13 +1,17 @@
 import Ably from "ably";
 
-const ablyKey = process.env.ABLY_SECRET_KEY;
+let _ably: Ably.Realtime | null = null;
 
-if (!ablyKey) {
-  throw new Error("ABLY_SECRET_KEY environment variable is not defined");
+export function getAbly() {
+  if (_ably) return _ably;
+  const ablyKey = process.env.ABLY_SECRET_KEY;
+  if (!ablyKey) {
+    throw new Error("ABLY_SECRET_KEY environment variable is not defined");
+  }
+  _ably = new Ably.Realtime({ key: ablyKey });
+  return _ably;
 }
 
-export const ably = new Ably.Realtime({ key: ablyKey });
-
 export function getAblyChannel(roomId: string) {
-  return ably.channels.get(`room:${roomId}`);
+  return getAbly().channels.get(`room:${roomId}`);
 }
