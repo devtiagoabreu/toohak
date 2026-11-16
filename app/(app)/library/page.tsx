@@ -8,20 +8,65 @@ import { demoContent, type ContentKind } from "@/lib/data";
 
 const labels: Record<ContentKind, string> = { quiz: "Quiz", story: "História", course: "Curso" };
 
+type LibraryItem = {
+  id: string;
+  title: string;
+  kind: ContentKind;
+  status: "published" | "draft" | "shared";
+  updatedAt: string;
+  plays: number;
+  color: string;
+  description: string;
+};
+
+function formatUpdatedAt(value: unknown): string {
+  if (!value) return "";
+  const d = new Date(String(value));
+  if (isNaN(d.getTime())) return String(value);
+  const now = new Date();
+  const diffMs = now.getTime() - d.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  if (diffDays === 0) return d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }).replace(":", "h");
+  if (diffDays === 1) return "Ontem";
+  if (diffDays < 7) return `${diffDays} dias atrás`;
+  return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
+}
+
+async function fetchLibraryItems(): Promise<LibraryItem[]> {
+  const base = process.env.NEXT_PUBLIC_APP_URL || "";
+  try {
+    const res = await fetch(`${base}/api/library`, { cache: "no-store" });
+    if (!res.ok) throw new Error("falha");
+    const data = await res.json();
+    return data.items || [];
+  } catch {
+    return [];
+  }
+}
+
 function LibraryContent() {
   const searchParams = useSearchParams();
   const qParam = searchParams.get("q") || "";
   const [query, setQuery] = useState(qParam);
   const [filter, setFilter] = useState<"all" | ContentKind>("all");
   const [view, setView] = useState<"grid" | "list">("grid");
+  const [items, setItems] = useState<LibraryItem[]>(demoContent as unknown as LibraryItem[]);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     setQuery(qParam);
   }, [qParam]);
 
+  useEffect(() => {
+    fetchLibraryItems().then(fetched => {
+      if (fetched.length) setItems(fetched);
+      setLoaded(true);
+    });
+  }, []);
+
   const filtered = useMemo(
-    () => demoContent.filter(item => (filter === "all" || item.kind === filter) && item.title.toLowerCase().includes(query.toLowerCase())),
-    [filter, query]
+    () => items.filter(item => (filter === "all" || item.kind === filter) && item.title.toLowerCase().includes(query.toLowerCase())),
+    [items, filter, query]
   );
 
   return <div className="library-page">
@@ -29,7 +74,7 @@ function LibraryContent() {
       <div><div className="eyebrow">CONTEÚDO</div><h1>Biblioteca</h1><p className="page-lede">Tudo o que você criou, salvou e compartilhou em um só lugar.</p></div>
       <Link href="/create" className="create-button"><Plus size={18} /> Novo conteúdo</Link>
     </div>
-    <div className="library-tabs"><button className="library-tab active">Meu conteúdo <span>12</span></button><button className="library-tab">Compartilhado <span>4</span></button><button className="library-tab">Arquivado</button></div>
+    <div className="library-tabs"><button className="library-tab active">Meu conteúdo <span>{filtered.length}</span></button><button className="library-tab">Compartilhado <span>4</span></button><button className="library-tab">Arquivado</button></div>
     <div className="toolbar">
       <div className="inner-search"><Search size={17} /><input value={query} onChange={event => setQuery(event.target.value)} placeholder="Buscar por título" aria-label="Buscar por título" /></div>
       <div className="toolbar-right">
@@ -39,7 +84,7 @@ function LibraryContent() {
       </div>
     </div>
     {view === "grid" ? <div className="library-grid">{filtered.map(item => <ContentCard item={item} key={item.id} />)}<Link href="/create" className="empty-create-card"><div className="empty-plus"><Plus size={22} /></div><strong>Criar algo novo</strong><span>Comece uma experiência do zero</span></Link></div> : <div className="content-table"><div className="table-header"><span>Conteúdo</span><span>Formato</span><span>Status</span><span>Atualizado</span><span /></div>{filtered.map(item => <div className="table-row" key={item.id}><div className="table-content"><div className={`content-thumb small ${item.color}`}><span>{item.kind[0].toUpperCase()}</span></div><strong>{item.title}</strong></div><span>{labels[item.kind]}</span><span className={`status-label ${item.status}`}>{item.status === "published" ? "Publicado" : item.status === "draft" ? "Rascunho" : "Compartilhado"}</span><span>{item.updatedAt}</span><button className="icon-button" aria-label="Mais opções"><MoreHorizontal size={18} /></button></div>)}</div>}
-    <div className="library-footer"><span>{filtered.length} de {demoContent.length} conteúdos exibidos</span><button className="text-button"><Archive size={15} /> Ver itens arquivados</button></div>
+    <div className="library-footer"><span>{filtered.length} de {items.length} conteúdos exibidos</span><button className="text-button"><Archive size={15} /> Ver itens arquivados</button></div>
   </div>;
 }
 
@@ -47,7 +92,7 @@ export default function Library() {
   return <Suspense fallback={<div className="library-page"><p>Carregando biblioteca...</p></div>}><LibraryContent /></Suspense>;
 }
 
-function ContentCard({ item }: { item: (typeof demoContent)[number] }) {
+function ContentCard({ item }: { item: LibraryItem }) {
   return <article className="library-card">
     <div className={`library-card-cover ${item.color}`}><div className="cover-pattern" /><span className="kind-chip">{item.kind === "quiz" ? "QUIZ" : item.kind === "story" ? "HISTÓRIA" : "CURSO"}</span><div className="cover-letter">{item.kind[0].toUpperCase()}</div><button className="cover-more" aria-label="Mais opções"><MoreHorizontal size={18} /></button></div>
     <div className="library-card-body">

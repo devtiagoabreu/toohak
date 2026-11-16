@@ -4,7 +4,7 @@
 
 ## Resumo
 - Stack: Next.js 14 (App Router), NextAuth (JWT/Credentials), Drizzle ORM + Neon/Postgres, Ably (chave), UI em `app/(app)`.
-- Estado: quizzes + histórias + cursos com mídia por **link/URL** (sem upload), shell/perfil autenticado real, página Configurações, testes Vitest+RTL (24 passando), tema Vibrante com cores vivas, correções de contraste (Drácula e hover de botões), busca da topbar funcional, favicon/logo configurado, SEO completo (metadata/JSON-LD/robots/sitemap/manifest). Sala ao vivo demo ainda usa BroadcastChannel (`lib/liveRoom.ts`). Atualizado: 16/11/2026 13:46.
+- Estado: quizzes + histórias + cursos com mídia por **link/URL** (sem upload), shell/perfil autenticado real, página Configurações, testes Vitest+RTL (24 passando), tema Vibrante com cores vivas, correções de contraste (Drácula e hover de botões), busca da topbar funcional, favicon/logo configurado, SEO completo (metadata/JSON-LD/robots/sitemap/manifest). Sala ao vivo demo ainda usa BroadcastChannel (`lib/liveRoom.ts`). Atualizado: 16/11/2026 15:53.
 
 ## Feito (última entrega)
 - **Perfil/sessão (UI)**: `AuthSessionProvider` no `app/layout.tsx`; `AppShell` com `useSession` + `lib/userDisplay.ts` (nome/iniciais/email reais, menu sair). Página `app/(app)/settings/page.tsx` (perfil, conta, "Sobre o Toohak" — criador Tiago de Abreu @devtiagoabreu, marido da Marina e pai da Rosa, Ágatha e Cecília). `/settings` protegido; `/dashboard` redireciona p/ `/library`; login pós-sucesso → `/library`.
@@ -37,4 +37,5 @@
 
 ## Comandos
 `npm run dev` | `npm run build` | `npm test` | `npm run db:generate` | `npm run db:migrate` | `npm run db:studio`
+
 
