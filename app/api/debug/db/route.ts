@@ -3,7 +3,6 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { getDb } from "@/lib/db";
 import { quizzes } from "@/db/schema";
-import { eq } from "drizzle-orm";
 
 export async function GET() {
   const info: any = {
@@ -27,18 +26,12 @@ export async function GET() {
     };
 
     const db = getDb();
-    // Testa conexão simples
-    const count = await db.select({ count: db.$count(quizzes) }).from(quizzes);
-    info.db = { connected: true, quizCount: count[0]?.count || 0 };
+    const rows = await db.select().from(quizzes).limit(1);
+    info.db = { connected: true, quizCount: rows.length };
 
-    // Verifica se as colunas existem tentando inserir um registro de teste vazio
-    // (não vamos realmente inserir, só validar schema)
-    try {
-      const columns = await db.execute`SELECT column_name FROM information_schema.columns WHERE table_name = 'quizzes'`;
-      info.db.columns = (columns as any[]).map((c: any) => c.column_name);
-    } catch (e) {
-      info.db.columnsError = (e as Error).message;
-    }
+    // Lista colunas da tabela quizzes
+    const columns = await db.execute`SELECT column_name FROM information_schema.columns WHERE table_name = 'quizzes' ORDER BY ordinal_position`;
+    info.db.columns = (columns as any[]).map((c: any) => c.column_name);
   } catch (err: any) {
     info.error = err.message;
     info.stack = err.stack;
