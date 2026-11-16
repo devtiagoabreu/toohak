@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   description: siteConfig.description,
   applicationName: siteConfig.name,
   keywords: siteConfig.keywords,
-  authors: [{ name: siteConfig.creator }],
+  authors: [{ name: siteConfig.creator, url: "https://github.com/devtiagoabreu" }],
   creator: siteConfig.creator,
   publisher: siteConfig.name,
   icons: {
@@ -63,6 +63,52 @@ export const viewport: Viewport = {
   themeColor: "#ff1493",
 };
 
+function JsonLd() {
+  const org = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: siteConfig.name,
+    url: siteConfig.url,
+    logo: `${siteConfig.url}/toohak-logo.jpg`,
+    sameAs: ["https://github.com/devtiagoabreu"],
+  };
+  const website = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: siteConfig.name,
+    url: siteConfig.url,
+    potentialAction: {
+      "@type": "SearchAction",
+      target: `${siteConfig.url}/library?q={search_term_string}`,
+      "query-input": "required name=search_term_string",
+    },
+  };
+  const app = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    name: siteConfig.name,
+    applicationCategory: "Education",
+    operatingSystem: "Web",
+    url: siteConfig.url,
+  };
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(org) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(website) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(app) }}
+      />
+    </>
+  );
+}
+
 export default function RootLayout({
   children,
 }: {
@@ -73,6 +119,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <AuthSessionProvider>
           <ThemeProvider defaultTheme="vibrant" switchable>
+            <JsonLd />
             {children}
           </ThemeProvider>
         </AuthSessionProvider>

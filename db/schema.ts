@@ -108,3 +108,47 @@ export const options = pgTable("options", {
   colorCode: varchar("color_code", { length: 20 }),
   orderIndex: integer("order_index").default(0).notNull(),
 });
+
+export const stories = pgTable("stories", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  title: varchar("title", { length: 200 }).notNull(),
+  description: text("description"),
+  coverImageUrl: varchar("cover_image_url", { length: 1000 }),
+  status: varchar("status", { length: 20 }).default("draft").notNull(),
+  isPublic: boolean("is_public").default(true).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const storyBlocks = pgTable("story_blocks", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  storyId: uuid("story_id").notNull().references(() => stories.id, { onDelete: "cascade" }),
+  type: varchar("type", { length: 30 }).notNull(), // text, image, video, question, reflection
+  content: text("content").notNull(),
+  mediaUrl: varchar("media_url", { length: 1000 }),
+  mediaType: varchar("media_type", { length: 20 }),
+  orderIndex: integer("order_index").notNull(),
+});
+
+export const courses = pgTable("courses", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  title: varchar("title", { length: 200 }).notNull(),
+  description: text("description"),
+  coverImageUrl: varchar("cover_image_url", { length: 1000 }),
+  status: varchar("status", { length: 20 }).default("draft").notNull(),
+  isPublic: boolean("is_public").default(true).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const courseActivities = pgTable("course_activities", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  courseId: uuid("course_id").notNull().references(() => courses.id, { onDelete: "cascade" }),
+  type: varchar("type", { length: 30 }).notNull(), // quiz, story, video, reading, reflection
+  title: varchar("title", { length: 200 }).notNull(),
+  contentUrl: varchar("content_url", { length: 1000 }),
+  orderIndex: integer("order_index").notNull(),
+  required: boolean("required").default(true).notNull(),
+});
