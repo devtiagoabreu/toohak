@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   BarChart3,
   BookOpen,
@@ -36,6 +36,7 @@ const navItems = [
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const location = usePathname();
+  const router = useRouter();
   const { data: session } = useSession();
   const user = session?.user;
   const displayName = getDisplayName(user as any);
@@ -44,6 +45,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const [createOpen, setCreateOpen] = useState(false);
   const [themeOpen, setThemeOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
   const { theme, setTheme, themeOptions } = useTheme();
 
   const isActive = (href: string) => (href === "/" ? location === "/" : location.startsWith(href));
@@ -53,6 +55,14 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     { title: "História", detail: "Narrativa com blocos, mídia e reflexão", href: "/create?kind=story", icon: Sparkles, tone: "violet" },
     { title: "Curso", detail: "Uma trilha com várias atividades", href: "/courses?new=1", icon: BookOpen, tone: "mint" },
   ];
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    const q = searchTerm.trim();
+    if (q) router.push(`/library?q=${encodeURIComponent(q)}`);
+    else router.push("/library");
+    setMobileOpen(false);
+  };
 
   return <div className="app-shell">
     <aside className={`sidebar ${mobileOpen ? "sidebar-open" : ""}`}>
@@ -68,6 +78,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       </div>
     </aside>
     {mobileOpen && <button className="mobile-scrim" onClick={() => setMobileOpen(false)} aria-label="Fechar navegação" />}
-    <main className="main-area"><header className="topbar"><button className="icon-button mobile-menu" onClick={() => setMobileOpen(true)} aria-label="Abrir menu"><Menu size={20} /></button><div className="search-box"><Search size={17} /><input placeholder="Buscar conteúdos, pessoas ou atividades" aria-label="Buscar conteúdos" /><kbd>⌘ K</kbd></div><div className="topbar-actions"><button className="help-link">Ajuda</button><div className="create-wrap"><button className="create-button" onClick={() => setCreateOpen(value => !value)}><Plus size={18} strokeWidth={2.5} /> Criar <ChevronDown size={15} /></button>{createOpen && <div className="create-menu">{createItems.map(item => { const Icon = item.icon; return <Link key={item.title} href={item.href} onClick={() => setCreateOpen(false)} className="create-menu-item"><span className={`create-menu-icon ${item.tone}`}><Icon size={18} /></span><span><strong>{item.title}</strong><small>{item.detail}</small></span></Link>; })}</div>}</div><div className="top-avatar" title={displayName} aria-label={`Usuário: ${displayName}`}>{initials}</div></div></header><div className="page-content">{children}</div></main>
+    <main className="main-area"><header className="topbar"><button className="icon-button mobile-menu" onClick={() => setMobileOpen(true)} aria-label="Abrir menu"><Menu size={20} /></button><form className="search-box" onSubmit={handleSearch} role="search"><Search size={17} /><input value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="Buscar conteúdos, pessoas ou atividades" aria-label="Buscar conteúdos" /><kbd>↵</kbd></form><div className="topbar-actions"><button className="help-link">Ajuda</button><div className="create-wrap"><button className="create-button" onClick={() => setCreateOpen(value => !value)}><Plus size={18} strokeWidth={2.5} /> Criar <ChevronDown size={15} /></button>{createOpen && <div className="create-menu">{createItems.map(item => { const Icon = item.icon; return <Link key={item.title} href={item.href} onClick={() => setCreateOpen(false)} className="create-menu-item"><span className={`create-menu-icon ${item.tone}`}><Icon size={18} /></span><span><strong>{item.title}</strong><small>{item.detail}</small></span></Link>; })}</div>}</div><div className="top-avatar" title={displayName} aria-label={`Usuário: ${displayName}`}>{initials}</div></div></header><div className="page-content">{children}</div></main>
   </div>;
 }

@@ -12,7 +12,7 @@ export interface ThemeOption {
 }
 
 export const themeOptions: ThemeOption[] = [
-  { id: "vibrant", label: "Vibrante", description: "Cores vivas para aprender brincando", swatches: ["#ff5c70", "#6c4cff", "#12b8a6"] },
+  { id: "vibrant", label: "Vibrante", description: "Pink, roxo, verde e laranja bem vivos", swatches: ["#ff1493", "#7b2cff", "#00d26a", "#ff7a00"] },
   { id: "dracula", label: "Drácula", description: "Contraste noturno para código e foco", swatches: ["#bd93f9", "#ff79c6", "#50fa7b"] },
   { id: "apple", label: "Apple sóbrio", description: "Claro, calmo e minimalista", swatches: ["#0071e3", "#86868b", "#34c759"] },
   { id: "ubuntu", label: "Ubuntu", description: "Acolhedor, humano e comunitário", swatches: ["#e95420", "#77216f", "#19a3b7"] },
